@@ -117,6 +117,20 @@ const macCodeSvg = `
   </svg>
 `.trim()
 
+// 给不同级别标题加表情（可按需修改）
+const HEADING_EMOJI: Record<number, string> = {
+  1: `✨`, // H1
+  2: `🔥`, // H2
+  3: `📌`, // H3
+  4: `⭐`, // H4
+  5: `🔸`, // H5
+  6: `🔹`, // H6
+}
+
+// 引用与“引用链接”标题的表情
+const BLOCKQUOTE_EMOJI = `💬` // 引用块前缀
+const FOOTNOTE_HEADING_EMOJI = `🔖` // “引用链接”小标题前缀
+
 interface ParseResult {
   yamlData: Record<string, any>
   markdownContent: string
@@ -214,7 +228,7 @@ export function initRenderer(opts: IOpts): RendererAPI {
     }
 
     return (
-      styledContent(`h4`, `引用链接`)
+      styledContent(`h4`, `${FOOTNOTE_HEADING_EMOJI} 引用链接`)
       + styledContent(`footnotes`, buildFootnoteArray(footnotes), `p`)
     )
   }
@@ -223,7 +237,9 @@ export function initRenderer(opts: IOpts): RendererAPI {
     heading({ tokens, depth }: Tokens.Heading) {
       const text = this.parser.parseInline(tokens)
       const tag = `h${depth}`
-      return styledContent(tag, text)
+      const icon = HEADING_EMOJI[depth] ?? `🔹`
+      const textWithEmoji = `${icon} ${text}`
+      return styledContent(tag, textWithEmoji)
     },
 
     paragraph({ tokens }: Tokens.Paragraph): string {
@@ -237,9 +253,20 @@ export function initRenderer(opts: IOpts): RendererAPI {
     },
 
     blockquote({ tokens }: Tokens.Blockquote): string {
-      let text = this.parser.parse(tokens)
-      text = text.replace(/<p .*?>/g, `<p ${styles(`blockquote_p`)}>`)
-      return styledContent(`blockquote`, text)
+      let html = this.parser.parse(tokens)
+      // 应用段落样式
+      html = html.replace(/<p .*?>/g, `<p ${styles(`blockquote_p`)}>`)
+
+      // 在第一个 <p> 里注入表情；如果没有 <p>（极少数情况），就整体前置
+      const icon = `${BLOCKQUOTE_EMOJI} `
+      if (/<p[^>]*>/.test(html)) {
+        html = html.replace(/(<p[^>]*>)/, `$1${icon}`)
+      }
+      else {
+        html = icon + html
+      }
+
+      return styledContent(`blockquote`, html)
     },
 
     code({ text, lang = `` }: Tokens.Code): string {
