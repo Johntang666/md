@@ -160,6 +160,83 @@ function parseFrontMatterAndContent(markdownText: string): ParseResult {
     }
   }
 }
+function renderTimelineBlock(text: string): string {
+  const lines = text.split(`\n`)
+  let title = ``
+  const events: { time: string, items: string[] }[] = []
+  let current: { time: string, items: string[] } | null = null
+
+  for (const line of lines) {
+    if (line.startsWith(`# `)) {
+      title = line.slice(2).trim()
+    }
+    else if (line.startsWith(`## `)) {
+      current = { time: line.slice(3).trim(), items: [] }
+      events.push(current)
+    }
+    else if (current && line.trim()) {
+      current.items.push(line.trim())
+    }
+  }
+
+  const buckets = events
+    .map((ev) => {
+      const items = ev.items
+        .map(it => `<p>${marked.parseInline(it)}</p>`)
+        .join(``)
+      return `
+        <div class="timeline-line"><div class="timeline-circle"></div></div>
+        <div class="timeline-wrapper">
+          <div class="timeline-time">${ev.time}</div>
+          <div class="timeline-event">${items}</div>
+        </div>`
+    })
+    .join(``)
+
+  return `
+    <div class="plugin-timeline">
+      <div class="timeline-title">${title}</div>
+      <div class="timeline-content">${buckets}</div>
+    </div>`
+}
+
+function renderChatBlock(text: string): string {
+  const { attributes, body } = frontMatter(text)
+  const opts = Object.assign(
+    { showNickname: true, showAvatar: true, senderNickname: `me`, timeNickname: `time` },
+    attributes || {},
+  )
+  const messages: string[] = []
+  const lines = body.split(`\n`).map(l => l.trim()).filter(Boolean)
+  for (const line of lines) {
+    const i = line.indexOf(`:`)
+    if (i === -1)
+      continue
+    const name = line.slice(0, i).trim()
+    let msg = line.slice(i + 1).trim()
+    msg = msg.replace(/\\n/g, `\n`).replace(/\\r/g, `\r`).replace(/\\t/g, `\t`)
+
+    const lower = name.toLowerCase()
+    if (lower === opts.timeNickname) {
+      messages.push(`<div class="plugin-chat-time">${msg}</div>`)
+      continue
+    }
+    const isSender = lower === opts.senderNickname
+    const class_ = isSender ? `plugin-chat-send` : `plugin-chat-receive`
+    const nickname = opts.showNickname && !isSender
+      ? `<div class="plugin-chat-nickname">${name}</div>`
+      : ``
+    let avatar = ``
+    if (opts.showAvatar) {
+      avatar = `<div class="plugin-chat-avatar"><div class="avatar-font">${name[0]?.toUpperCase() || ``}</div></div>`
+    }
+    messages.push(
+      `<div class="${class_}">${avatar}<div class="plugin-chat-quote">${nickname}<div class="plugin-chat-text">${marked.parseInline(msg)}</div></div></div>`,
+    )
+  }
+
+  return `<div class="plugin-chat"><div class="plugin-chat-content">${messages.join(``)}</div></div>`
+}
 
 export function initRenderer(opts: IOpts): RendererAPI {
   const footnotes: [number, string, string][] = []
@@ -270,6 +347,12 @@ export function initRenderer(opts: IOpts): RendererAPI {
     },
 
     code({ text, lang = `` }: Tokens.Code): string {
+      if (lang === `timeline`) {
+        return renderTimelineBlock(text)
+      }
+      if (lang === `chat`) {
+        return renderChatBlock(text)
+      }
       if (lang.startsWith(`mermaid`)) {
         clearTimeout(codeIndex)
         codeIndex = setTimeout(() => {
@@ -280,7 +363,6 @@ export function initRenderer(opts: IOpts): RendererAPI {
       const langText = lang.split(` `)[0]
       const language = hljs.getLanguage(langText) ? langText : `plaintext`
       let highlighted = hljs.highlight(text, { language }).value
-      // tab to 4 spaces
       highlighted = highlighted.replace(/\t/g, `    `)
       highlighted = highlighted
         .replace(/\r\n/g, `<br/>`)

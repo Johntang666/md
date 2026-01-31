@@ -36,7 +36,7 @@ function onRedirect(url: string) {
         <p>扫码关注公众号 Doocs，原创技术内容第一时间推送！</p>
         <img
           class="mx-auto my-5"
-          src="https://cdn-doocs.oss-cn-shenzhen.aliyuncs.com/gh/doocs/md/images/1648303220922-7e14aefa-816e-44c1-8604-ade709ca1c69.png"
+          src="https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo315dp5viv0u205o0p6rtgbk14477rn38?imageView2/2/w/540/format/webp|imageMogr2/strip2"
           alt="Doocs Markdown 编辑器"
           style="width: 40%"
         >
