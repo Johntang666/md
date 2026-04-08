@@ -78,13 +78,17 @@ npm i
 # 启动开发模式
 npm start
 
-# 部署在 /md 目录
+# 通用静态部署（推荐，资源使用相对路径）
 npm run build
-# 访问 http://127.0.0.1:9000/md
+# 访问 http://127.0.0.1:9000/当前部署目录/
 
 # 部署在根目录
-npm run build:h5-netlify
+npm run build:root
 # 访问 http://127.0.0.1:9000/
+
+# 如需固定部署在 /md 目录
+cross-env BUILD_BASE=/md/ npm run build:only
+# 访问 http://127.0.0.1:9000/md/
 
 # Chrome 插件启动及调试
 npm run ext:dev
@@ -96,6 +100,8 @@ npm run ext:zip
 # Firefox 扩展打包(how to build Firefox addon)
 npm run firefox:zip # output zip file at in .output/md-{version}-firefox.zip
 ```
+
+注意：不要直接双击 `dist/index.html` 通过 `file://` 打开。当前构建产物依赖浏览器的 ES module 加载机制，必须通过 `http://` 或 `https://` 静态服务访问，例如 `md-cli`、`vite preview`、Nginx、Caddy 等。
 
 ## 快速搭建私有服务
 

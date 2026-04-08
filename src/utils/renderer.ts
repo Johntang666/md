@@ -120,7 +120,7 @@ const macCodeSvg = `
 // 给不同级别标题加表情（可按需修改）
 const HEADING_EMOJI: Record<number, string> = {
   1: `✨`, // H1
-  2: `🔥`, // H2
+  2: `🤖`, // H2
   3: `📌`, // H3
   4: `⭐`, // H4
   5: `🔸`, // H5

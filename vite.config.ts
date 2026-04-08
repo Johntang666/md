@@ -11,8 +11,10 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import { VitePluginRadar } from 'vite-plugin-radar'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
+import { resolveBuildBase } from './scripts/resolve-build-base.js'
+
 export default defineConfig({
-  base: process.env.SERVER_ENV === `NETLIFY` ? `/` : `/md/`,
+  base: resolveBuildBase(process.env),
   define: { process },
   envPrefix: [`VITE_`, `CF_`],
   plugins: [
