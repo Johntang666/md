@@ -66,6 +66,10 @@ const formatOptions = ref<Format[]>([`rgb`, `hex`, `hsl`, `hsv`])
         :change="themeChanged"
       />
       <MenubarSeparator />
+      <MenubarCheckboxItem v-model:checked="store.isBilingual">
+        双语阅读
+      </MenubarCheckboxItem>
+      <MenubarSeparator />
       <StyleOptionMenu
         title="字体"
         :options="fontFamilyOptions"

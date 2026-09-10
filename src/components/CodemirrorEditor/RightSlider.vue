@@ -64,8 +64,17 @@ const formatOptions = ref<Format[]>([`rgb`, `hex`, `hsl`, `hsv`])
         </div>
       </div>
       <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <Label for="bilingual-reading">双语阅读</Label>
+          <Switch id="bilingual-reading" v-model:checked="store.isBilingual" />
+        </div>
+        <p class="text-muted-foreground text-xs">
+          自动配对相邻的 [EN] 原文与 [CN] 译文，并整理词汇提示。
+        </p>
+      </div>
+      <div class="space-y-2">
         <h2>字体</h2>
-        <div class="grid grid-cols-3 justify-items-center gap-2">
+        <div class="grid grid-cols-2 justify-items-center gap-2">
           <Button
             v-for="{ label, value } in fontFamilyOptions" :key="value" variant="outline" class="w-full"
             :class="{ 'border-black dark:border-white border-2': store.fontFamily === value }" @click="store.fontChanged(value)"

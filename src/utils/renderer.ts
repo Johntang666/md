@@ -16,6 +16,7 @@ import markedFootnotes from './MDFootnotes'
 import { MDKatex } from './MDKatex'
 import markedSlider from './MDSlider'
 import { markedToc } from './MDToc'
+import { renderReferenceLinks } from './referenceLinks'
 
 hljs.registerLanguage(`gdscript`, gdscript)
 
@@ -86,16 +87,6 @@ function getStyles(styleMapping: ThemeStyles, tokenName: string, addition: strin
   return `style="${styles}${addition}"`
 }
 
-function buildFootnoteArray(footnotes: [number, string, string][]): string {
-  return footnotes
-    .map(([index, title, link]) =>
-      link === title
-        ? `<code style="font-size: 90%; opacity: 0.6;">[${index}]</code>: <i style="word-break: break-all">${title}</i><br/>`
-        : `<code style="font-size: 90%; opacity: 0.6;">[${index}]</code> ${title}: <i style="word-break: break-all">${link}</i><br/>`,
-    )
-    .join(`\n`)
-}
-
 function transform(legend: string, text: string | null, title: string | null): string {
   const options = legend.split(`-`)
   for (const option of options) {
@@ -116,20 +107,6 @@ const macCodeSvg = `
     <ellipse cx="400" cy="65" rx="50" ry="52" stroke="rgb(27,161,37)" stroke-width="2" fill="rgb(100,200,86)" />
   </svg>
 `.trim()
-
-// 给不同级别标题加表情（可按需修改）
-const HEADING_EMOJI: Record<number, string> = {
-  1: `✨`, // H1
-  2: `🤖`, // H2
-  3: `📌`, // H3
-  4: `⭐`, // H4
-  5: `🔸`, // H5
-  6: `🔹`, // H6
-}
-
-// 引用与“引用链接”标题的表情
-const BLOCKQUOTE_EMOJI = `💬` // 引用块前缀
-const FOOTNOTE_HEADING_EMOJI = `🔖` // “引用链接”小标题前缀
 
 interface ParseResult {
   yamlData: Record<string, any>
@@ -299,24 +276,13 @@ export function initRenderer(opts: IOpts): RendererAPI {
     `
   }
 
-  const buildFootnotes = () => {
-    if (!footnotes.length) {
-      return ``
-    }
-
-    return (
-      styledContent(`h4`, `${FOOTNOTE_HEADING_EMOJI} 引用链接`)
-      + styledContent(`footnotes`, buildFootnoteArray(footnotes), `p`)
-    )
-  }
+  const buildFootnotes = () => renderReferenceLinks(footnotes, opts.fonts)
 
   const renderer: RendererObject = {
     heading({ tokens, depth }: Tokens.Heading) {
       const text = this.parser.parseInline(tokens)
       const tag = `h${depth}`
-      const icon = HEADING_EMOJI[depth] ?? `🔹`
-      const textWithEmoji = `${icon} ${text}`
-      return styledContent(tag, textWithEmoji)
+      return styledContent(tag, text)
     },
 
     paragraph({ tokens }: Tokens.Paragraph): string {
@@ -333,15 +299,6 @@ export function initRenderer(opts: IOpts): RendererAPI {
       let html = this.parser.parse(tokens)
       // 应用段落样式
       html = html.replace(/<p .*?>/g, `<p ${styles(`blockquote_p`)}>`)
-
-      // 在第一个 <p> 里注入表情；如果没有 <p>（极少数情况），就整体前置
-      const icon = `${BLOCKQUOTE_EMOJI} `
-      if (/<p[^>]*>/.test(html)) {
-        html = html.replace(/(<p[^>]*>)/, `$1${icon}`)
-      }
-      else {
-        html = icon + html
-      }
 
       return styledContent(`blockquote`, html)
     },

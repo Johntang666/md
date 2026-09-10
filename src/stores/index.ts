@@ -75,12 +75,20 @@ export const useStore = defineStore(`store`, () => {
   const isUseIndent = useStorage(addPrefix(`use_indent`), false)
   const toggleUseIndent = useToggle(isUseIndent)
 
+  const isBilingual = useStorage(addPrefix(`bilingual`), defaultStyleConfig.isBilingual)
+
   const output = ref(``)
 
   // 文本字体
   const theme = useStorage<keyof typeof themeMap>(addPrefix(`theme`), defaultStyleConfig.theme)
   // 文本字体
   const fontFamily = useStorage(`fonts`, defaultStyleConfig.fontFamily)
+  // Adopt the personal bilingual preset once, while allowing later font changes.
+  const hasMixedFontDefault = useStorage(addPrefix(`mixed_font_default`), false)
+  if (!hasMixedFontDefault.value || fontFamily.value === `'Times New Roman', 'Microsoft YaHei', '微软雅黑', sans-serif`) {
+    fontFamily.value = defaultStyleConfig.fontFamily
+    hasMixedFontDefault.value = true
+  }
   // 文本大小
   const fontSize = useStorage(`size`, defaultStyleConfig.fontSize)
   // 主色
@@ -361,6 +369,7 @@ export const useStore = defineStore(`store`, () => {
   const editorRefresh = () => {
     codeThemeChange()
     renderer.reset({
+      isBilingual: isBilingual.value,
       citeStatus: isCiteStatus.value,
       legend: legend.value,
       isUseIndent: isUseIndent.value,
@@ -393,6 +402,11 @@ export const useStore = defineStore(`store`, () => {
     }
     output.value = div.innerHTML
   }
+
+  watch(isBilingual, () => {
+    if (editor.value)
+      editorRefresh()
+  })
 
   // 更新 CSS
   const updateCss = () => {
@@ -461,6 +475,7 @@ export const useStore = defineStore(`store`, () => {
 
   // 重置样式
   const resetStyle = () => {
+    isBilingual.value = defaultStyleConfig.isBilingual
     isCiteStatus.value = defaultStyleConfig.isCiteStatus
     isMacCodeBlock.value = defaultStyleConfig.isMacCodeBlock
     isCountStatus.value = defaultStyleConfig.isCountStatus
@@ -685,6 +700,7 @@ export const useStore = defineStore(`store`, () => {
     showAIToolbox,
     aiToolboxChanged,
     isUseIndent,
+    isBilingual,
     useIndentChanged,
 
     isCountStatus,
@@ -810,6 +826,7 @@ export function getAllStoreStates() {
     showAIToolbox: store.showAIToolbox,
     isCountStatus: store.isCountStatus,
     isUseIndent: store.isUseIndent,
+    isBilingual: store.isBilingual,
     isOpenRightSlider: store.isOpenRightSlider,
     isOpenPostSlider: store.isOpenPostSlider,
     theme: store.theme,

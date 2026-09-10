@@ -12,8 +12,10 @@ import * as prettierPluginCss from 'prettier/plugins/postcss'
 import { format } from 'prettier/standalone'
 import { prefix } from '@/config/prefix'
 import { addSpacingToMarkdown } from '@/utils/autoSpace'
+import { formatBilingualHtml } from './bilingual'
 import markedAlert from './MDAlert'
 import { MDKatex } from './MDKatex'
+import { formatVocabularyHtml } from './vocabulary'
 
 export function addPrefix(str: string) {
   return `${prefix}__${str}`
@@ -578,7 +580,8 @@ export function renderMarkdown(raw: string, renderer: RendererAPI) {
 
 export function postProcessHtml(baseHtml: string, reading: ReadTimeResults, renderer: RendererAPI): string {
   // 阅读时间及字数统计
-  let html = baseHtml
+  let html = renderer.getOpts().isBilingual ? formatBilingualHtml(baseHtml) : baseHtml
+  html = formatVocabularyHtml(html)
   html = renderer.buildReadingTime(reading) + html
   // 去除第一行的 margin-top
   html = html.replace(/(style=".*?)"/, `$1;margin-top: 0"`)

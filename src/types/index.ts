@@ -31,6 +31,7 @@ export interface IOpts {
   citeStatus?: boolean
   countStatus?: boolean
   isMacCodeBlock?: boolean
+  isBilingual?: boolean
 }
 
 export type ThemeStyles = Record<Block | Inline, ExtendedProperties>

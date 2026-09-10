@@ -3,6 +3,11 @@ import { themeOptions } from '@/config/theme'
 
 export const fontFamilyOptions: IConfigOption[] = [
   {
+    label: `中英混排`,
+    value: `'Times New Roman', SimSun, '宋体', 'Songti SC', 'Noto Serif CJK SC', serif`,
+    desc: `新罗马 / 宋体`,
+  },
+  {
     label: `无衬线`,
     value: `-apple-system-font,BlinkMacSystemFont, Helvetica Neue, PingFang SC, Hiragino Sans GB , Microsoft YaHei UI , Microsoft YaHei ,Arial,sans-serif`,
     desc: `字体123Abc`,
@@ -230,6 +235,7 @@ export const legendOptions: IConfigOption[] = [
 ]
 
 export const defaultStyleConfig = {
+  isBilingual: true,
   isCiteStatus: false,
   isMacCodeBlock: true,
   isCountStatus: false,
